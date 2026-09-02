@@ -261,3 +261,26 @@ footer {
   font-size: var(--small-font);
   padding: 1em;
 }
+.cart-icon {
+  position: relative;
+  display: inline-block;
+}
+
+.cart-count {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background-color: #f0a800; /* Choose your accent color */
+  color: #000;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 2px 6px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Hide badge if cart is empty */
+.cart-count.hide {
+  display: none;
+}
