@@ -1,48 +1,94 @@
-import { getLocalStorage, setLocalStorage, updateCartCount } from "./utils.mjs";
+import {
+  getLocalStorage,
+  setLocalStorage,
+  calculateCartTotal,
+  updateCartBadge
+} from './utils.mjs';
 
-function renderCartContents() {
-  // 1. Fallback to an empty array [] if localStorage returns null
-  const cartItems = getLocalStorage("so-cart") || [];
-  const productList = document.querySelector(".product-list");
-  const cartFooter = document.querySelector(".cart-footer");
+function cartItemTemplate(item) {
+  const quantity = item.Quantity || 1;
+  const itemTotal = (item.FinalPrice * quantity).toFixed(2);
 
-  // 2. Check if the cart array is empty
-  if (!cartItems || cartItems.length === 0) {
-    productList.innerHTML = "<p class='empty-cart-msg'>Your cart is currently empty.</p>";
-    
-    // Hide the total/checkout section if it exists
-    if (cartFooter) {
-      cartFooter.classList.add("hide");
-    }
-    return;
-  }
+  return `<li class="cart-card divider">
+    <span class="remove-item" data-id="${item.Id}" role="button" title="Remove item">❌</span>
 
-  // 3. Map items safely since cartItems is guaranteed to be an array
-  const htmlItems = cartItems.map((item) => cartItemTemplate(item));
-  productList.innerHTML = htmlItems.join("");
+    <a href="#" class="cart-card__image">
+      <img src="${item.Image}" alt="${item.Name}" />
+    </a>
+    <h2 class="card__name">${item.Name}</h2>
+    <p class="cart-card__color">${item.Colors[0].ColorName}</p>
 
-  // Render cart total
-  renderCartTotal(cartItems);
+    <div class="cart-card__quantity-controls">
+      <button class="quantity-btn" data-id="${item.Id}" data-action="decrease">-</button>
+      <span class="cart-card__quantity">qty: ${quantity}</span>
+      <button class="quantity-btn" data-id="${item.Id}" data-action="increase">+</button>
+    </div>
 
-  // Attach removal event listeners
-  attachRemoveListeners();
+    <p class="cart-card__price">$${itemTotal}</p>
+  </li>`;
 }
 
-function renderCartTotal(cartItems) {
-  const cartFooter = document.querySelector(".cart-footer");
-  const cartTotal = document.querySelector(".cart-total");
+function removeItemFromCart(productId) {
+  let cartItems = getLocalStorage('so-cart') || [];
+  cartItems = cartItems.filter((item) => item.Id !== productId);
+  setLocalStorage('so-cart', cartItems);
+  renderCartContents();
+}
 
-  // Safeguard reduce against empty or null arrays
-  const total = (cartItems || []).reduce(
-    (sum, item) => sum + item.FinalPrice * (item.Quantity || 1),
-    0
-  );
+function changeQuantity(productId, action) {
+  let cartItems = getLocalStorage('so-cart') || [];
+  const itemIndex = cartItems.findIndex((item) => item.Id === productId);
 
-  if (cartTotal) {
-    cartTotal.innerText = `Total: $${total.toFixed(2)}`;
+  if (itemIndex > -1) {
+    let currentQty = cartItems[itemIndex].Quantity || 1;
+
+    if (action === 'increase') {
+      cartItems[itemIndex].Quantity = currentQty + 1;
+    } else if (action === 'decrease') {
+      currentQty -= 1;
+      if (currentQty > 0) {
+        cartItems[itemIndex].Quantity = currentQty;
+      } else {
+        cartItems = cartItems.filter((item) => item.Id !== productId);
+      }
+    }
+
+    setLocalStorage('so-cart', cartItems);
+    renderCartContents();
+  }
+}
+
+export function renderCartContents() {
+  const cartItems = getLocalStorage('so-cart') || [];
+  const listElement = document.querySelector('.product-list');
+
+  if (cartItems.length > 0) {
+    const htmlItems = cartItems.map((item) => cartItemTemplate(item));
+    listElement.innerHTML = htmlItems.join('');
+
+    const totalAmount = calculateCartTotal(cartItems);
+    document.querySelector('.cart-total-amount').textContent = `$${totalAmount.toFixed(2)}`;
+    document.querySelector('.cart-footer').classList.remove('hide');
+  } else {
+    listElement.innerHTML = '<p>Your cart is empty.</p>';
+    document.querySelector('.cart-footer')?.classList.add('hide');
   }
 
-  if (cartFooter) {
-    cartFooter.classList.remove("hide");
+  updateCartBadge();
+}
+
+document.querySelector('.product-list').addEventListener('click', (event) => {
+  const target = event.target;
+  const productId = target.dataset.id;
+
+  if (target.classList.contains('remove-item')) {
+    removeItemFromCart(productId);
   }
-} 
+
+  if (target.classList.contains('quantity-btn')) {
+    const action = target.dataset.action;
+    changeQuantity(productId, action);
+  }
+});
+
+renderCartContents();

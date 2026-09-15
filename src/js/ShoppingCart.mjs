@@ -9,7 +9,7 @@ function renderCartContents() {
     productList.innerHTML = "<p>Your cart is currently empty.</p>";
   } else {
     productList.innerHTML = htmlItems.join("");
-    // Attach event listeners to all 'X' buttons after rendering
+    
     attachRemoveListeners();
   }
 }
@@ -35,7 +35,7 @@ function cartItemTemplate(item) {
   `;
 }
 
-// 2. Attach click listeners to every removal button
+
 function attachRemoveListeners() {
   const removeButtons = document.querySelectorAll(".cart-card__remove");
 
@@ -47,21 +47,21 @@ function attachRemoveListeners() {
   });
 }
 
-// 3. Remove item from LocalStorage and re-render
+
 function removeFromCart(id) {
   let cartItems = getLocalStorage("so-cart") || [];
 
-  // Filter out the item matching the ID
+  
   cartItems = cartItems.filter((item) => item.Id !== id);
 
-  // Restore updated cart in LocalStorage
+  
   setLocalStorage("so-cart", cartItems);
 
-  // Update header badge and re-render the list
+  
   updateCartCount();
   renderCartContents();
 }
 
-// Initial render on page load
+
 renderCartContents();
 updateCartCount();
