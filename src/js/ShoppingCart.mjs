@@ -1,67 +1,42 @@
-import { getLocalStorage, setLocalStorage, updateCartCount } from "./utils.mjs";
-
-function renderCartContents() {
-  const cartItems = getLocalStorage("so-cart") || [];
-  const htmlItems = cartItems.map((item) => cartItemTemplate(item));
-  const productList = document.querySelector(".product-list");
-
-  if (cartItems.length === 0) {
-    productList.innerHTML = "<p>Your cart is currently empty.</p>";
-  } else {
-    productList.innerHTML = htmlItems.join("");
-    
-    attachRemoveListeners();
-  }
-}
+import { getLocalStorage, renderListWithTemplate } from "./utils.mjs";
 
 function cartItemTemplate(item) {
-  const itemTotal = (item.FinalPrice * (item.Quantity || 1)).toFixed(2);
+  const imageUrl = item.Images?.PrimaryMedium || item.Image || "";
+  const price = item.FinalPrice || item.ListPrice || 0;
 
   return `
     <li class="cart-card divider">
-      <!-- 1. Added X button with data-id -->
-      <span class="cart-card__remove" data-id="${item.Id}">❌</span>
-      
       <a href="/product_pages/index.html?product=${item.Id}" class="cart-card__image">
-        <img src="${item.Image}" alt="${item.Name}" />
+        <img src="${imageUrl}" alt="${item.Name}" />
       </a>
       <a href="/product_pages/index.html?product=${item.Id}">
         <h2 class="card__name">${item.Name}</h2>
       </a>
-      <p class="cart-card__color">${item.Colors ? item.Colors[0].ColorName : ""}</p>
+      <p class="cart-card__color">${item.Colors?.[0]?.ColorName || ""}</p>
       <p class="cart-card__quantity">qty: ${item.Quantity || 1}</p>
-      <p class="cart-card__price">$${itemTotal}</p>
+      <p class="cart-card__price">$${Number(price).toFixed(2)}</p>
     </li>
   `;
 }
 
+export default class ShoppingCart {
+  constructor(key, parentElement) {
+    this.key = key;
+    this.parentElement = parentElement;
+  }
 
-function attachRemoveListeners() {
-  const removeButtons = document.querySelectorAll(".cart-card__remove");
+  init() {
+    const cartItems = getLocalStorage(this.key) || [];
+    this.renderCartContents(cartItems);
+  }
 
-  removeButtons.forEach((button) => {
-    button.addEventListener("click", (e) => {
-      const idToRemove = e.target.dataset.id;
-      removeFromCart(idToRemove);
-    });
-  });
+  renderCartContents(cartItems) {
+    if (!this.parentElement) return;
+
+    if (cartItems.length > 0) {
+      renderListWithTemplate(cartItemTemplate, this.parentElement, cartItems, "afterbegin", true);
+    } else {
+      this.parentElement.innerHTML = "<p>Your cart is empty.</p>";
+    }
+  }
 }
-
-
-function removeFromCart(id) {
-  let cartItems = getLocalStorage("so-cart") || [];
-
-  
-  cartItems = cartItems.filter((item) => item.Id !== id);
-
-  
-  setLocalStorage("so-cart", cartItems);
-
-  
-  updateCartCount();
-  renderCartContents();
-}
-
-
-renderCartContents();
-updateCartCount();

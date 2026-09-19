@@ -270,7 +270,7 @@ footer {
   position: absolute;
   top: -5px;
   right: -8px;
-  background-color: #f0a800; /* Choose your accent color */
+  background-color: #f0a800;
   color: #000;
   font-size: 0.75rem;
   font-weight: bold;
@@ -280,12 +280,11 @@ footer {
   text-align: center;
 }
 
-/* Hide badge if cart is empty */
 .cart-count.hide {
   display: none;
 }
 .cart-card {
-  position: relative; /* Allows absolute positioning for the 'X' button */
+  position: relative;
 }
 
 .cart-card__remove {
@@ -300,4 +299,49 @@ footer {
 
 .cart-card__remove:hover {
   transform: scale(1.2);
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1.5rem;
+  list-style-type: none;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+
+.product-grid li {
+  text-align: center;
+}
+
+.product-grid a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #303030;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-grid a:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+
+.product-grid img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+.product-grid h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
 }
