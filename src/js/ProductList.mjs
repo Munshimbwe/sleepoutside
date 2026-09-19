@@ -30,15 +30,16 @@ export default class ProductList {
   async init() {
     if (!this.listElement) return;
 
-    const list = await this.dataSource.getData();
-    const filteredList = this.filterProducts(list);
-    this.renderList(filteredList);
-  }
+    // Fetch products based on category using API endpoint
+    const list = await this.dataSource.getData(this.category);
+    this.renderList(list);
 
-  filterProducts(list) {
-    if (!Array.isArray(list)) return [];
-    const allowedIds = ["880RR", "985RF", "985PR", "344YJ"];
-    return list.filter((product) => allowedIds.includes(product.Id));
+    // Dynamic Title update
+    const titleElement = document.querySelector(".title");
+    if (titleElement) {
+      const formatted = this.category.charAt(0).toUpperCase() + this.category.slice(1);
+      titleElement.textContent = `Top Products: ${formatted}`;
+    }
   }
 
   renderList(list) {
