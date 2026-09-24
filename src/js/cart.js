@@ -1,8 +1,13 @@
-import { loadHeaderFooter } from "./utils.mjs";
+import { loadHeaderFooter, updateCartBadge } from "./utils.mjs";
 import ShoppingCart from "./ShoppingCart.mjs";
 
-loadHeaderFooter();
+async function initCart() {
+  await loadHeaderFooter();
+  updateCartBadge();
 
-const listElement = document.querySelector(".product-list");
-const cart = new ShoppingCart("so-cart", listElement);
-cart.init();
+  // "so-cart" is the localStorage key, ".product-list" is the target UL/container element
+  const cart = new ShoppingCart("so-cart", ".product-list");
+  cart.renderCartContents();
+}
+
+initCart();

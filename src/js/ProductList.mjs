@@ -5,16 +5,36 @@ function productCardTemplate(product) {
   const brandName = product.Brand?.Name || product.Brand || "";
   const price = product.FinalPrice || product.ListPrice || 0;
 
+  // Calculate discount badge
+  const hasDiscount =
+    product.ListPrice &&
+    product.FinalPrice &&
+    product.ListPrice > product.FinalPrice;
+  const discountPercent = hasDiscount
+    ? Math.round(
+        ((product.ListPrice - product.FinalPrice) / product.ListPrice) * 100
+      )
+    : 0;
+
   return `
     <li class="product-card">
-      <a href="/product_pages/index.html?product=${product.Id}">
+      <a href="../product_pages/index.html?product=${product.Id}">
         <img
           src="${imageUrl}"
-          alt="${product.NameWithoutBrand || product.Name || 'Product Image'}"
+          alt="${product.NameWithoutBrand || product.Name || "Product Image"}"
         />
         <h3 class="card__brand">${brandName}</h3>
-        <h2 class="card__name">${product.NameWithoutBrand || product.Name}</h2>
-        <p class="product-card__price">$${Number(price).toFixed(2)}</p>
+        <h2 class="card__name">${
+          product.NameWithoutBrand || product.Name
+        }</h2>
+        <p class="product-card__price">
+          $${Number(price).toFixed(2)}
+          ${
+            hasDiscount
+              ? `<span class="discount-badge">-${discountPercent}% OFF</span>`
+              : ""
+          }
+        </p>
       </a>
     </li>
   `;
@@ -32,17 +52,29 @@ export default class ProductList {
 
     // Fetch products based on category using API endpoint
     const list = await this.dataSource.getData(this.category);
-    this.renderList(list);
+
+    if (Array.isArray(list) && list.length > 0) {
+      this.renderList(list);
+    } else {
+      this.listElement.innerHTML = `<p>No products found for "${this.category}".</p>`;
+    }
 
     // Dynamic Title update
     const titleElement = document.querySelector(".title");
     if (titleElement) {
-      const formatted = this.category.charAt(0).toUpperCase() + this.category.slice(1);
+      const formatted =
+        this.category.charAt(0).toUpperCase() + this.category.slice(1);
       titleElement.textContent = `Top Products: ${formatted}`;
     }
   }
 
   renderList(list) {
-    renderListWithTemplate(productCardTemplate, this.listElement, list, "afterbegin", true);
+    renderListWithTemplate(
+      productCardTemplate,
+      this.listElement,
+      list,
+      "afterbegin",
+      true
+    );
   }
 }
