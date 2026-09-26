@@ -1,4 +1,4 @@
-import { setLocalStorage, getLocalStorage, updateCartBadge } from "./utils.mjs";
+import { setLocalStorage, getLocalStorage, updateCartBadge, alertMessage } from "./utils.mjs";
 
 function productDetailsTemplate(product) {
   const imageUrl = product.Images?.PrimaryLarge || product.Image || "";
@@ -73,5 +73,6 @@ export default class ProductDetails {
     if (mainElement) {
       mainElement.innerHTML = productDetailsTemplate(this.product);
     }
+    alertMessage(`${product.NameWithoutBrand || product.Name} added to cart!`, false);
   }
 }
