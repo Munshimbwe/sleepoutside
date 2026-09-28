@@ -1,3 +1,4 @@
+// js/ProductDetails.mjs
 import { setLocalStorage, getLocalStorage, updateCartBadge, alertMessage } from "./utils.mjs";
 
 function productDetailsTemplate(product) {
@@ -32,6 +33,7 @@ export default class ProductDetails {
   }
 
   async init() {
+    // I fetch product details from the API endpoint
     this.product = await this.dataSource.findProductById(this.productId);
 
     if (!this.product) {
@@ -42,8 +44,10 @@ export default class ProductDetails {
       return;
     }
 
+    // I render the product markup into the main element
     this.renderProductDetails();
 
+    // I bind the click listener to the Add to Cart button
     const addToCartButton = document.getElementById("addToCart");
     if (addToCartButton) {
       addToCartButton.addEventListener("click", this.addProductToCart.bind(this));
@@ -51,11 +55,13 @@ export default class ProductDetails {
   }
 
   addProductToCart() {
+    // I retrieve current items from localStorage or fallback to an empty array
     let cartItems = getLocalStorage("so-cart") || [];
     if (!Array.isArray(cartItems)) {
       cartItems = [];
     }
 
+    // I check if product already exists to increment quantity or add it as a new item
     const existingIndex = cartItems.findIndex((item) => item.Id === this.product.Id);
     if (existingIndex > -1) {
       cartItems[existingIndex].Quantity = (cartItems[existingIndex].Quantity || 1) + 1;
@@ -64,15 +70,22 @@ export default class ProductDetails {
       cartItems.push(this.product);
     }
 
+    // I save the updated cart to local storage
     setLocalStorage("so-cart", cartItems);
+
+    // I update the cart badge count in the header
     updateCartBadge();
+
+    // I trigger a success alert notification when the user adds an item
+    const productName = this.product.NameWithoutBrand || this.product.Name;
+    alertMessage(`${productName} added to cart!`, false);
   }
 
   renderProductDetails() {
+    // I target the main container element and replace its contents with the product markup
     const mainElement = document.querySelector("main");
     if (mainElement) {
       mainElement.innerHTML = productDetailsTemplate(this.product);
     }
-    alertMessage(`${product.NameWithoutBrand || product.Name} added to cart!`, false);
   }
 }

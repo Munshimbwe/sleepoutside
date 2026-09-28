@@ -1,38 +1,40 @@
+// js/ExternalServices.mjs
 import { getLocalStorage } from "./utils.mjs";
 
-const baseURL = "http://wdd330-backend.onrender-osp8.com/";
+const baseURL = "https://wdd330-backend.onrender.com";
 
-// Helper function OUTSIDE the class
 async function convertToJson(res) {
-  // 1. Convert response body to JSON first
   const jsonResponse = await res.json();
-
-  // 2. Check if the HTTP status is in the 200–299 range
   if (res.ok) {
     return jsonResponse;
   } else {
-    // 3. Throw custom error object containing the server response details
+    // I throw a custom error object so CheckoutProcess and other caller modules can catch validation errors
     throw { name: "servicesError", message: jsonResponse };
   }
 }
 
 export default class ExternalServices {
   constructor() {
-    // Shared configurations
+    this.baseURL = baseURL;
   }
 
+  // I fetch a list of products filtered by category
   async getData(category) {
-    const response = await fetch(`${baseURL}products/search/${category}`);
+    const response = await fetch(`${this.baseURL}/products/search/${category}`);
     const data = await convertToJson(response);
+    // I return the nested Result array from the API response
     return data.Result;
   }
 
+  // I fetch a single product's details using its ID
   async findProductById(id) {
-    const response = await fetch(`${baseURL}product/${id}`);
+    const response = await fetch(`${this.baseURL}/product/${id}`);
     const data = await convertToJson(response);
-    return data.Result;
+    // I handle both direct objects and nested Result payloads
+    return data.Result || data;
   }
 
+  // I send the checkout payload to the order endpoint
   async checkout(payload) {
     const options = {
       method: "POST",
@@ -42,7 +44,7 @@ export default class ExternalServices {
       body: JSON.stringify(payload),
     };
 
-    const response = await fetch(`${baseURL}checkout`, options);
+    const response = await fetch(`${this.baseURL}/checkout`, options);
     return await convertToJson(response);
   }
 }

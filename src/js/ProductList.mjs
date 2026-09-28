@@ -1,3 +1,4 @@
+// js/ProductList.mjs
 import { renderListWithTemplate } from "./utils.mjs";
 
 function productCardTemplate(product) {
@@ -5,7 +6,7 @@ function productCardTemplate(product) {
   const brandName = product.Brand?.Name || product.Brand || "";
   const price = product.FinalPrice || product.ListPrice || 0;
 
-  // Calculate discount badge
+  // I calculate whether a discount applies and compute the percentage
   const hasDiscount =
     product.ListPrice &&
     product.FinalPrice &&
@@ -50,16 +51,27 @@ export default class ProductList {
   async init() {
     if (!this.listElement) return;
 
-    // Fetch products based on category using API endpoint
-    const list = await this.dataSource.getData(this.category);
+    try {
+      // I fetch product data for the given category from my data source
+      let list = await this.dataSource.getData(this.category);
 
-    if (Array.isArray(list) && list.length > 0) {
-      this.renderList(list);
-    } else {
-      this.listElement.innerHTML = `<p>No products found for "${this.category}".</p>`;
+      // I ensure list is an array, unwrapping list.Result if the API returns a wrapper object
+      if (list && !Array.isArray(list) && Array.isArray(list.Result)) {
+        list = list.Result;
+      }
+
+      if (Array.isArray(list) && list.length > 0) {
+        this.renderList(list);
+      } else {
+        this.listElement.innerHTML = `<p>No products found for "${this.category}".</p>`;
+      }
+    } catch (error) {
+      // I log fetch errors and display a friendly notice to the user
+      console.error("I encountered an error fetching product list:", error);
+      this.listElement.innerHTML = `<p>Unable to load products. Please try again later.</p>`;
     }
 
-    // Dynamic Title update
+    // I update the dynamic category title in the DOM
     const titleElement = document.querySelector(".title");
     if (titleElement) {
       const formatted =
@@ -69,6 +81,7 @@ export default class ProductList {
   }
 
   renderList(list) {
+    // I render the array of products into the list element using my template function
     renderListWithTemplate(
       productCardTemplate,
       this.listElement,
